@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "38629363666",
+    "project_id": "bus-api-fluther",
+    "storage_bucket": "bus-api-fluther.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:38629363666:android:1a6f34f684d6fc3364c20b",
+        "android_client_info": {
+          "package_name": "com.kahramanmaras.bus_density_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCB5RWe1n4Nr0HtA6IvWFF8z-F9rJ8KQWw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

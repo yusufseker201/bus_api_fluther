@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Bus App Stable (Chrome)",
+      "type": "pwa-chrome",
+      "request": "launch",
+      "url": "http://127.0.0.1:8000",
+      "webRoot": "${workspaceFolder}/build/web",
+      "preLaunchTask": "Start Bus App Backend"
+    },
+    {
+      "name": "Bus App Stable (Chrome 8010)",
+      "type": "pwa-chrome",
+      "request": "launch",
+      "url": "http://127.0.0.1:8010",
+      "webRoot": "${workspaceFolder}/build/web",
+      "preLaunchTask": "Start Bus App Backend 8010"
+    }
+  ]
+}

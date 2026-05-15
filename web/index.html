@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="A new Flutter project.">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="bus_density_mobile">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>bus_density_mobile</title>
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+  <style>
+    #boot-status {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(180deg, #f7f8fb 0%, #eef2ff 100%);
+      color: #1f2937;
+      font-family: DejaVu Sans, sans-serif;
+      z-index: 9999;
+      padding: 24px;
+      text-align: center;
+    }
+
+    #boot-card {
+      max-width: 560px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 24px;
+      box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+      padding: 24px;
+    }
+
+    #boot-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0 0 12px;
+    }
+
+    #boot-message {
+      margin: 0;
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+  </style>
+  <div id="boot-status">
+    <div id="boot-card">
+      <h1 id="boot-title">Uygulama baslatiliyor</h1>
+      <p id="boot-message">Web kaynaklari yukleniyor...</p>
+    </div>
+  </div>
+  <script>
+    (async function () {
+      const bootTitle = document.getElementById('boot-title');
+      const bootMessage = document.getElementById('boot-message');
+      const bootStatus = document.getElementById('boot-status');
+
+      window.__busHideBootStatus = function () {
+        if (bootStatus) {
+          bootStatus.remove();
+        }
+      };
+
+      window.__busShowBootError = function (title, message) {
+        if (bootTitle) bootTitle.textContent = title;
+        if (bootMessage) bootMessage.textContent = message;
+      };
+
+      window.addEventListener('error', function (event) {
+        const detail = event?.error?.stack || event?.message || 'Bilinmeyen tarayici hatasi';
+        window.__busShowBootError(
+          'Web baslatma hatasi',
+          'Uygulama JavaScript tarafinda baslayamadi.\n\n' + detail
+        );
+      });
+
+      window.addEventListener('unhandledrejection', function (event) {
+        const reason = event?.reason?.stack || event?.reason?.message || String(event?.reason || 'Bilinmeyen Promise hatasi');
+        window.__busShowBootError(
+          'Web kaynaklari yuklenemedi',
+          'Flutter web baslatma asamasinda bir istek veya modul hatasi olustu.\n\n' + reason
+        );
+      });
+
+      const isLocalDev =
+        location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+      const cacheWasClearedThisSession =
+        sessionStorage.getItem('bus_density_cache_cleared_v3') === '1';
+
+      if (isLocalDev && !cacheWasClearedThisSession) {
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(registrations.map((registration) => registration.unregister()));
+        }
+
+        if ('caches' in window) {
+          const cacheKeys = await caches.keys();
+          await Promise.all(cacheKeys.map((cacheKey) => caches.delete(cacheKey)));
+        }
+
+        sessionStorage.setItem('bus_density_cache_cleared_v3', '1');
+      }
+
+      const bootstrap = document.createElement('script');
+      bootstrap.src = 'flutter_bootstrap.js?v=3';
+      bootstrap.async = true;
+      bootstrap.onerror = function () {
+        window.__busShowBootError(
+          'Flutter bootstrap yuklenemedi',
+          'flutter_bootstrap.js dosyasi acilamadi. Tarayici cache, servis calisani veya yerel derleme dosyalari bozuk olabilir.'
+        );
+      };
+      document.body.appendChild(bootstrap);
+    })();
+  </script>
+</body>
+</html>
