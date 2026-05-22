@@ -12,6 +12,7 @@ class AppState extends ChangeNotifier {
 
   ApiService _api;
   Timer? _pollTimer;
+  Future<void>? _activeRefresh;
 
   bool isLoading = false;
   bool hasLoadedOnce = false;
@@ -30,7 +31,23 @@ class AppState extends ChangeNotifier {
     await refreshAll();
   }
 
-  Future<void> refreshAll() async {
+  Future<void> refreshAll() {
+    final activeRefresh = _activeRefresh;
+    if (activeRefresh != null) {
+      return activeRefresh;
+    }
+
+    final refresh = _runRefreshAll();
+    _activeRefresh = refresh;
+    refresh.whenComplete(() {
+      if (identical(_activeRefresh, refresh)) {
+        _activeRefresh = null;
+      }
+    });
+    return refresh;
+  }
+
+  Future<void> _runRefreshAll() async {
     isLoading = true;
     error = null;
     notifyListeners();

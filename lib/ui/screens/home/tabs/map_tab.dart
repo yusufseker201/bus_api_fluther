@@ -28,48 +28,68 @@ class MapTab extends StatelessWidget {
     final stops = app.stops.where((s) => s.latitude != null && s.longitude != null).toList();
 
     if (kIsWeb) {
-      return _WebMapExperience(
-        stops: stops,
-        lines: app.lines,
-        reports: app.reports,
+      return RefreshIndicator(
+        onRefresh: () => context.read<AppState>().refreshAll(),
+        child: _WebMapExperience(
+          stops: stops,
+          lines: app.lines,
+          reports: app.reports,
+        ),
       );
     }
 
-    return FlutterMap(
-      options: const MapOptions(
-        initialCenter: _center,
-        initialZoom: 12,
-      ),
-      children: [
-        TileLayer(
-          urlTemplate: _osmTileUrl,
-          userAgentPackageName: _userAgentPackageName,
-        ),
-        MarkerLayer(
-          markers: [
-            for (final stop in stops)
-              Marker(
-                point: LatLng(stop.latitude!, stop.longitude!),
-                width: 46,
-                height: 46,
-                child: GestureDetector(
-                  onTap: () => _openStopSheet(
-                    context,
-                    stop: stop,
-                    lines: app.lines,
-                    reports: app.reports,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final minHeight = math.max(420.0, constraints.maxHeight + 1);
+
+        return RefreshIndicator(
+          onRefresh: () => context.read<AppState>().refreshAll(),
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: [
+              SizedBox(
+                height: minHeight,
+                child: FlutterMap(
+                  options: const MapOptions(
+                    initialCenter: _center,
+                    initialZoom: 12,
                   ),
-                  child: _StopMarker(level: stop.currentDensity),
+                  children: [
+                    TileLayer(
+                      urlTemplate: _osmTileUrl,
+                      userAgentPackageName: _userAgentPackageName,
+                    ),
+                    MarkerLayer(
+                      markers: [
+                        for (final stop in stops)
+                          Marker(
+                            point: LatLng(stop.latitude!, stop.longitude!),
+                            width: 46,
+                            height: 46,
+                            child: GestureDetector(
+                              onTap: () => _openStopSheet(
+                                context,
+                                stop: stop,
+                                lines: app.lines,
+                                reports: app.reports,
+                              ),
+                              child: _StopMarker(level: stop.currentDensity),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const RichAttributionWidget(
+                      attributions: [
+                        TextSourceAttribution('© OpenStreetMap contributors'),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-          ],
-        ),
-        const RichAttributionWidget(
-          attributions: [
-            TextSourceAttribution('© OpenStreetMap contributors'),
-          ],
-        ),
-      ],
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -102,6 +122,7 @@ class _WebMapExperience extends StatelessWidget {
         ),
       ),
       child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(16),
         children: [
           _MapHeroCard(

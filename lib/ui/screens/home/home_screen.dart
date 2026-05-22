@@ -17,7 +17,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _index = 1;
-  bool _polling = true;
   late final Future<void> _loadFuture;
 
   @override
@@ -45,38 +44,22 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('Kahramanmaraş Yoğunluk'),
         actions: [
-          IconButton(
-            tooltip: _polling ? 'Canlı güncellemeyi durdur' : 'Canlı güncellemeyi başlat',
-            onPressed: () {
-              setState(() => _polling = !_polling);
-              final state = context.read<AppState>();
-              if (_polling) {
-                state.startPolling();
-              } else {
-                state.stopPolling();
-              }
-            },
-            icon: Icon(_polling ? Icons.pause_circle : Icons.play_circle),
-          ),
-          IconButton(
-            tooltip: 'Yenile',
-            onPressed: app.isLoading ? null : () => context.read<AppState>().refreshAll(),
-            icon: const Icon(Icons.refresh),
-          ),
-          if (session.isLoggedIn)
-            IconButton(
-              tooltip: 'Çıkış',
-              onPressed: () => session.logout(),
-              icon: const Icon(Icons.logout),
-            )
-          else
-            IconButton(
-              tooltip: 'Giriş',
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-              ),
-              icon: const Icon(Icons.login),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: _AuthActionButton(
+              isLoggedIn: session.isLoggedIn,
+              onPressed: () {
+                if (session.isLoggedIn) {
+                  session.logout();
+                  return;
+                }
+
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                );
+              },
             ),
+          ),
         ],
       ),
       body: SafeArea(
@@ -116,6 +99,70 @@ class _HomeScreenState extends State<HomeScreen> {
           NavigationDestination(icon: Icon(Icons.directions_bus_outlined), selectedIcon: Icon(Icons.directions_bus), label: 'Hatlar'),
           NavigationDestination(icon: Icon(Icons.pin_drop_outlined), selectedIcon: Icon(Icons.pin_drop), label: 'Duraklar'),
         ],
+      ),
+    );
+  }
+}
+
+class _AuthActionButton extends StatelessWidget {
+  const _AuthActionButton({
+    required this.isLoggedIn,
+    required this.onPressed,
+  });
+
+  final bool isLoggedIn;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final compact = screenWidth < 420;
+    final backgroundColor = isLoggedIn
+        ? const Color(0xFFE2E8F0)
+        : const Color(0xFFDBEAFE);
+    final foregroundColor = isLoggedIn
+        ? const Color(0xFF1E293B)
+        : const Color(0xFF1D4ED8);
+    final icon = isLoggedIn ? Icons.logout_rounded : Icons.login_rounded;
+    final label = isLoggedIn ? 'Çıkış Yap' : 'Giriş Yap';
+
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        maxWidth: compact ? 148 : 176,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(15),
+          child: Ink(
+            padding: EdgeInsets.symmetric(
+              horizontal: compact ? 10 : 14,
+              vertical: 8,
+            ),
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, size: 20, color: foregroundColor),
+                  const SizedBox(width: 8),
+                  Text(
+                    label,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: foregroundColor,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
